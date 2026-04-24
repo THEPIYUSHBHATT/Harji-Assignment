@@ -1,11 +1,43 @@
-import { Zap } from "lucide-react";
-import Image from "next/image";
+'use client'
+
+import { useMemo } from 'react'
+import { Zap } from 'lucide-react'
+import Image from 'next/image'
+import { useRoadmap } from '@/context/RoadmapContext'
 
 export default function SkillsProgress() {
-  const skills = [
-    { name: "Math Problem Solving", progress: 60, color: "bg-[#229E91]", icon: <Image src="/maths.svg" alt="Math" width={30} height={30} /> },
-    { name: "Science Concepts", progress: 75, color: "bg-[#229E91]", icon: <Image src="/science.svg" alt="Science" width={30} height={30} /> },
-  ];
+  const { sections } = useRoadmap()
+
+  const skills = useMemo(() => {
+    const tasks = sections.flatMap((section) => section.tasks)
+    const computeProgress = (matcher) => {
+      const filtered = tasks.filter((task) => matcher(task.type))
+      if (filtered.length === 0) return 0
+      const completed = filtered.filter(
+        (task) => task.status === 'completed',
+      ).length
+      return Math.round((completed / filtered.length) * 100)
+    }
+
+    return [
+      {
+        name: 'Math Problem Solving',
+        progress: computeProgress((type) =>
+          type?.toLowerCase().includes('math'),
+        ),
+        color: 'bg-[#229E91]',
+        icon: <Image src="/maths.svg" alt="Math" width={30} height={30} />,
+      },
+      {
+        name: 'Science Concepts',
+        progress: computeProgress((type) =>
+          type?.toLowerCase().includes('science'),
+        ),
+        color: 'bg-[#229E91]',
+        icon: <Image src="/science.svg" alt="Science" width={30} height={30} />,
+      },
+    ]
+  }, [sections])
 
   return (
     <div className="bg-white rounded-[12px] p-6 shadow-sm border border-[#EBEBEB] w-full">
@@ -17,7 +49,9 @@ export default function SkillsProgress() {
       <div className="space-y-4">
         {skills.map((skill, index) => (
           <div key={index} className="flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg`}>
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg`}
+            >
               {skill.icon}
             </div>
             <div className="flex-1">
@@ -36,5 +70,5 @@ export default function SkillsProgress() {
         ))}
       </div>
     </div>
-  );
+  )
 }

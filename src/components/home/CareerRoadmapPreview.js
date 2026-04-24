@@ -1,16 +1,39 @@
+'use client'
+
+import { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Map } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const ROADMAP_STEPS = [
-  { id: 1, title: 'Build Basics', active: true },
-  { id: 2, title: 'Strengthen Concepts', active: false },
-  { id: 3, title: 'Score in Boards', active: false },
-  { id: 4, title: 'PCM Stream', active: false },
-]
+import { useRoadmap } from '@/context/RoadmapContext'
 
 export default function CareerRoadmapPreview() {
+  const { sections } = useRoadmap()
+
+  const roadmapSteps = useMemo(
+    () =>
+      sections.map((section, index) => ({
+        id: index + 1,
+        title: section.title,
+        active:
+          section.status === 'completed' || section.status === 'in-progress',
+      })),
+    [sections],
+  )
+
+  const progressPercent = useMemo(() => {
+    if (!sections.length) return 0
+    const completed = sections.filter(
+      (section) => section.status === 'completed',
+    ).length
+    return Math.round((completed / sections.length) * 100)
+  }, [sections])
+
+  const nextMilestone = useMemo(() => {
+    const upcoming = sections.find((section) => section.status === 'locked')
+    return upcoming?.title || 'All Milestones Completed'
+  }, [sections])
+
   return (
     <div className="bg-[#FFFFFF] rounded-[12px] pt-[16px] pr-[24px] pb-[16px] pl-[24px] shadow-sm border border-[#EBEBEB] w-full flex flex-col gap-[24px]">
       <div className="flex items-center justify-between w-full h-[28px]">
@@ -29,11 +52,14 @@ export default function CareerRoadmapPreview() {
       {/* Progress Steps */}
       <div className="relative w-full mb-6 mt-2">
         <div className="absolute top-[13px] left-[50px] right-[50px] h-[2px] bg-[#EBEBEB] z-0">
-          <div className="h-full bg-[#0D9488]" style={{ width: '20%' }}></div>
+          <div
+            className="h-full bg-[#0D9488]"
+            style={{ width: `${progressPercent}%` }}
+          ></div>
         </div>
 
         <div className="flex justify-between w-full items-start relative z-10 px-4">
-          {ROADMAP_STEPS.map((step) => (
+          {roadmapSteps.map((step) => (
             <div
               key={step.id}
               className="flex flex-col items-center gap-[10px] w-[100px]"
@@ -87,10 +113,12 @@ export default function CareerRoadmapPreview() {
         <div className="flex items-center gap-[10px]">
           <Image src="/milestone.svg" alt="Milestone" width={16} height={16} />
           <span className="text-[13px] text-[#0D9488] font-medium">
-            Next Milestone: Strengthen Concepts
+            Next Milestone: {nextMilestone}
           </span>
         </div>
-        <span className="text-[14px] text-[#0D9488] font-bold">65%</span>
+        <span className="text-[14px] text-[#0D9488] font-bold">
+          {progressPercent}%
+        </span>
       </div>
     </div>
   )

@@ -1,7 +1,29 @@
+'use client'
+
+import { useMemo } from 'react'
 import Image from 'next/image'
 import { CheckCircle2, Clock } from 'lucide-react'
+import { useRoadmap } from '@/context/RoadmapContext'
 
 export default function TodaysFocus() {
+  const { sections } = useRoadmap()
+
+  const activeTask = useMemo(() => {
+    for (const section of sections) {
+      const task = section.tasks.find(
+        (item) => item.status === 'continue' || item.status === 'start',
+      )
+      if (task) return task
+    }
+    return null
+  }, [sections])
+
+  const focusTitle = activeTask?.title || 'Study Motion and Energy Concepts'
+  const subTasks = activeTask?.subTasks || [
+    'Understand speed, velocity, and acceleration.',
+    'Solve 5-10 basic numerical problems',
+  ]
+
   return (
     <div className="bg-white rounded-lg p-6 border border-[#EBEBEB] shadow-sm w-full">
       <div className="flex items-center gap-2 text-[#1A1A1A] font-semibold mb-4">
@@ -12,20 +34,20 @@ export default function TodaysFocus() {
       <div className="flex flex-col md:flex-row gap-6 items-stretch">
         <div className="flex-1 border border-[#EBEBEB] rounded-lg p-6 flex flex-col">
           <h3 className="font-semibold text-[#1A1A1A] mb-4 text-[18px] leading-none">
-            Study Motion and Energy Concepts
+            {focusTitle}
           </h3>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-[14px] text-text-secondary">
               <CheckCircle2 className="w-[18px] h-[18px] text-[#0D9488]" />
-              <span>Understand speed, velocity, and acceleration.</span>
+              <span>{subTasks[0]}</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between mt-3">
             <div className="flex items-center gap-3 text-[14px] text-text-secondary">
               <Clock className="w-[18px] h-[18px] text-gray-400" />
-              <span>Solve 5-10 basic numerical problems</span>
+              <span>{subTasks[1]}</span>
             </div>
           </div>
         </div>

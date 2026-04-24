@@ -1,76 +1,32 @@
+'use client'
+
+import { useMemo } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { useRoadmap } from '@/context/RoadmapContext'
 
 export default function SessionList() {
-  const sections = [
-    {
-      id: 'build-basics',
-      title: 'Build Basics',
-      description:
-        "You'll build a strong foundation in foundational math and science principles.",
-      status: 'in-progress',
-      progress: '60%',
-      tasksCompleted: 3,
-      totalTasks: 6,
-      tasks: [
-        {
-          title: 'Study Motion and Energy Concepts',
-          type: 'Science',
-          status: 'locked',
-          blurred: true,
-        },
-        {
-          title: 'Study Motion and Energy Concepts',
-          type: 'Science',
-          status: 'locked',
-          blurred: true,
-        },
-        {
-          title: 'Study Motion and Energy Concepts',
-          type: 'Science',
-          status: 'continue',
-          typeColor: 'text-[#EAB308]',
-          typeBg: 'bg-[#FEFCE8]',
-        },
-        {
-          title: 'Solve 20 Maths Question Daily',
-          type: 'Maths',
-          status: 'completed',
-          score: '98%',
-          typeColor: 'text-[#0D9488]',
-          typeBg: 'bg-[#F0FDF4]',
-        },
-        {
-          title: 'Watch a Science Concept Video',
-          type: 'Video • 10 Mins',
-          status: 'completed',
-          typeColor: 'text-[#E11D48]',
-          typeBg: 'bg-[#FFF1F2]',
-        },
-      ],
-    },
-    {
-      id: 'strengthen',
-      title: 'Strengthen Concepts',
-      description:
-        'Dive deeper into advanced topics to prepare for your board exams.',
-      status: 'locked',
-    },
-    {
-      id: 'score',
-      title: 'Score in Boards',
-      description:
-        'Achieve target scores in preliminary and final board examinations.',
-      status: 'locked',
-    },
-    {
-      id: 'pcm',
-      title: 'PCM Stream Selection',
-      description:
-        'Finalize stream choice based on aptitude and board results.',
-      status: 'locked',
-    },
-  ]
+  const { sections, updateTaskStatus } = useRoadmap()
+
+  const computedSections = useMemo(
+    () =>
+      sections.map((section) => {
+        const totalTasks = section.tasks.length
+        const tasksCompleted = section.tasks.filter(
+          (task) => task.status === 'completed',
+        ).length
+        const progressValue = totalTasks
+          ? Math.round((tasksCompleted / totalTasks) * 100)
+          : 0
+        return {
+          ...section,
+          totalTasks,
+          tasksCompleted,
+          progress: `${progressValue}%`,
+        }
+      }),
+    [sections],
+  )
 
   return (
     <div className="relative">
@@ -82,7 +38,7 @@ export default function SessionList() {
       </div>
 
       <div className="flex flex-col gap-[32px] w-full max-w-[692px]">
-        {sections.map((section, index) => (
+        {computedSections.map((section, index) => (
           <div
             key={section.id}
             className="relative flex gap-[12px] sm:gap-[24px] items-start"
@@ -202,7 +158,7 @@ export default function SessionList() {
                   <div className="flex flex-col gap-[12px]">
                     {section.tasks.map((task, i) => (
                       <div
-                        key={i}
+                        key={task.id || i}
                         className={cn(
                           'relative group flex flex-col sm:flex-row sm:items-center justify-between p-[12px] sm:p-[16px] rounded-[12px] border transition-all duration-300 gap-4 sm:gap-0',
                           task.blurred
@@ -231,8 +187,11 @@ export default function SessionList() {
 
                         <div className="flex items-center gap-[12px] sm:gap-[16px]">
                           <div
+                            onClick={() =>
+                              updateTaskStatus(section.id, task.id)
+                            }
                             className={cn(
-                              'w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] rounded-[4px] border-[1.5px] shrink-0 pointer-events-none',
+                              'w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] rounded-[4px] border-[1.5px] shrink-0 cursor-pointer transition-all duration-100 flex items-center justify-center',
                               task.status === 'completed'
                                 ? 'bg-[#22C55E] border-[#22C55E] flex items-center justify-center'
                                 : 'border-[#EBEBEB] bg-white',
@@ -292,8 +251,23 @@ export default function SessionList() {
                           )}
 
                           {task.status === 'continue' && (
-                            <button className="px-[12px] sm:px-[16px] py-[5px] sm:py-[6px] bg-white border border-[#EBEBEB] rounded-[10px] sm:rounded-[12px] text-[#0D9488] text-[11px] sm:text-[12px] font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+                            <button
+                              className="px-[12px] sm:px-[16px] py-[5px] sm:py-[6px] bg-white border border-[#EBEBEB] rounded-[10px] sm:rounded-[12px] text-[#0D9488] text-[11px] sm:text-[12px] font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer"
+                              onClick={() =>
+                                updateTaskStatus(section.id, task.id)
+                              }
+                            >
                               Continue
+                            </button>
+                          )}
+                          {task.status === 'start' && (
+                            <button
+                              className="px-[12px] sm:px-[16px] py-[5px] sm:py-[6px] bg-white border border-[#EBEBEB] rounded-[10px] sm:rounded-[12px] text-[#0D9488] text-[11px] sm:text-[12px] font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer"
+                              onClick={() =>
+                                updateTaskStatus(section.id, task.id)
+                              }
+                            >
+                              Start
                             </button>
                           )}
                           {task.status === 'completed' && (

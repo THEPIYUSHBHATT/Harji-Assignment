@@ -1,70 +1,13 @@
 'use client'
 
-import { useState } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
-
-const INITIAL_TASKS = [
-  {
-    id: 1,
-    title: 'Skills',
-    subject: 'Test',
-    subjectColor: 'text-purple-600',
-    status: 'locked',
-  },
-  {
-    id: 2,
-    title: 'Practice Algebra Problems Daily',
-    subject: 'Maths',
-    subjectColor: 'text-red-500',
-    status: 'locked',
-  },
-  {
-    id: 3,
-    title: 'Study Motion and Energy Concepts',
-    subject: 'Science',
-    subjectColor: 'text-[#EA580C]',
-    status: 'active',
-  },
-  {
-    id: 4,
-    title: 'Solve 20 Maths Question Daily',
-    subject: 'Maths',
-    subjectColor: 'text-[#0D9488]',
-    status: 'completed',
-  },
-  {
-    id: 5,
-    title: 'Watch a Science Concept Video',
-    subject: 'Exploration',
-    subjectColor: 'text-[#10B981]',
-    status: 'completed',
-  },
-  {
-    id: 6,
-    title: 'Follow a Weekly Study Plan',
-    subject: 'Habit',
-    subjectColor: 'text-[#DB2777]',
-    status: 'completed',
-  },
-]
+import { useRoadmap } from '@/context/RoadmapContext'
 
 export default function BuildBasics() {
-  const [tasks, setTasks] = useState(INITIAL_TASKS)
-
-  const toggleTask = (taskId) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => {
-        if (task.id === taskId && task.status !== 'locked') {
-          return {
-            ...task,
-            status: task.status === 'completed' ? 'active' : 'completed',
-          }
-        }
-        return task
-      }),
-    )
-  }
+  const { sections, updateTaskStatus } = useRoadmap()
+  const buildBasics = sections.find((section) => section.id === 'build-basics')
+  const tasks = buildBasics?.tasks || []
 
   return (
     <div className="bg-[#FFFFFF] rounded-[12px] p-[24px] shadow-sm border border-[#EBEBEB] w-full flex flex-col">
@@ -95,7 +38,7 @@ export default function BuildBasics() {
             >
               <div className="flex items-center gap-[12px]">
                 <div
-                  onClick={() => toggleTask(task.id)}
+                  onClick={() => updateTaskStatus('build-basics', task.id)}
                   className={cn(
                     'shrink-0',
                     task.status !== 'locked' && 'cursor-pointer',
@@ -104,7 +47,7 @@ export default function BuildBasics() {
                   {task.status === 'locked' && (
                     <div className="w-[18px] h-[18px] rounded-[4px] bg-gray-200"></div>
                   )}
-                  {task.status === 'active' && (
+                  {(task.status === 'start' || task.status === 'continue') && (
                     <div className="w-[18px] h-[18px] rounded-[4px] border-[2px] border-[#CBD5E1]"></div>
                   )}
                   {task.status === 'completed' && (
@@ -138,12 +81,9 @@ export default function BuildBasics() {
                     {task.title}
                   </span>
                   <span
-                    className={cn(
-                      'text-[12px] font-semibold',
-                      task.subjectColor,
-                    )}
+                    className={cn('text-[12px] font-semibold', task.typeColor)}
                   >
-                    {task.subject}
+                    {task.type}
                   </span>
                 </div>
               </div>
@@ -153,7 +93,7 @@ export default function BuildBasics() {
                   Start
                 </div>
               )}
-              {task.status === 'active' && (
+              {(task.status === 'start' || task.status === 'continue') && (
                 <button className="text-[12px] text-[#0D9488] font-medium border border-[#EDF5F0] rounded-[12px] px-[16px] py-[6px] hover:bg-[#F2FBF5] transition-colors shrink-0 cursor-pointer">
                   Continue
                 </button>
